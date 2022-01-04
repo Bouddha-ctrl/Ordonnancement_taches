@@ -1,15 +1,114 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-        <script src="script.js"></script>
+        <!-- CSS only -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
         <title>Document</title>
     </head>
     <body>
-        <div id="chart_div"></div>
+        <div class="container">
+            <form >
+                <div class="row">
+                    <div class="col">
+                        <label class="form-label" >Algorithme : </label> 
+                        <select class="form-select sm-2" id="select-algorithme" onchange="selectChanged();">
+                            <option value="fifo" selected>FIFO</option>
+                            <option value="sjf">SJF</option>
+                            <option value="srt">SRT</option>
+                            <option value="rr">RR</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Nombre de tache : </label>
+                        <input id="tacheInput" type="number" class="form-control" min="1" value="1"/>
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Nombre de processeur : </label>
+                        <input id="prossInput" type="number" class="form-control" min="1" value="1"/>
+                    </div>
+                    <div class="col" id="quantumDiv" style="display : none;">
+                        <label class="form-label">Quatum : </label>
+                        <input id="quantumInput" type="number" class="form-control" min="1" value="1"/>
+                    </div>
+                    
+                </div>
+                <div class="row justify-content-md-center">
+                    <div class="col-3 mt-3 mb-3">
+                        <button onclick="showTache(this);" type="button" class="btn btn-primary">Ajouter tache</button>
+                    </div>
+                </div>
+                <div  id="divTable" style="display:none;">  
+                    <div class="col-6">
+                        <div class="row">
+                            <table id="tacheTable" class="table table-bordered" >
+                                <thead>
+                                    <th>Taches</th><th>Date d'arrivé</th><th>Duréé de traitment</th>
+                                </thead>
+                                <tbody>
+                                    
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="row">
+                            <button onclick="addTache(this);" type="button" class="btn btn-primary">Calculer</button>
+                        </div>
+                    </div>
+                    
+                </div>
+            </form>
 
+
+            <div class="table-div pt-4 w-50" >
+                <table id="table" class="table table-bordered table-hover" style="text-align:center;display:none;">
+                    <thead>
+                        <tr class="table-light">
+                            <th scope="col"></th><th scope="col">Temps de rotation  </th><th scope="col">Temps d'attente</th><th scope="col">Rendement</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="container" style="
+                    padding-top: 30px;
+                    width: 100%;
+                    height: 100vh;
+                    flex-direction: column;
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-start;
+                    ">
+                <div class="gantt"></div>
+            </div>
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+            
+                .peace {
+                    text-align: center;
+                    width: 30px;
+                    height: 30px;
+                    padding: 2px;
+                    border: 1px solid black;
+                }
+            
+                .header {
+                    display: flex;
+                    flex-direction: row;
+                }
+            
+                .ligne {
+                    display: flex;
+                }
+            </style>
+
+        </div>
     </body>
     
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-
+    <script src="script.js"></script>
 </html>

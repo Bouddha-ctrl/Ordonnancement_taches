@@ -1,29 +1,30 @@
 
-
-var taches = [
+/* var taches = [
     { name: "p1", start: 0, duration: 3 },  
     { name: "p2", start: 2, duration: 6 },
     { name: "p3", start: 4, duration: 4 },
     { name: "p4", start: 6, duration: 5 },
     { name: "p5", start: 8, duration: 2 }
-];   
+];    */
+var T = [
+    { name: "p1", start: 0, duration: 2 }, 
+    { name: "p2", start: 0, duration: 3 },  
+    { name: "p2", start: 0, duration: 4 }
+]
 
-
-const numberPross = 1;
+const test = 2   ;
 
 /////////// CALL
-
-fifo(taches)
-//SJF(taches)
-//rr(taches,1)
 
 ////////// GLOBAL FUNCTION
 function avg(column){
     return column.reduce((a,b)=>(a+b),0)/column.length;
 }
+
 function tableAvg(table){  //rot, arr, rendement 
+
     average = {
-            tache: 'average',
+            tache: 'Average',
             rot      : avg(table.map((e)=>(e.rot))),
             attent   : avg(table.map((e)=>(e.attent))),
             rendement: avg(table.map((e)=>(e.rendement))).toFixed(2)
@@ -31,10 +32,11 @@ function tableAvg(table){  //rot, arr, rendement
     return average;
 }
 
-function createTableSimple(output){
-    table = [];
+function createTable(output){
+    let table = [];
     output.forEach(element => {
-        let rot = element.end - element.initStart;
+        let max = Math.max(...element.quantum.map((e)=>(e.end)));
+        let rot = max-element.start;
         let att = rot - element.duration;
         let rend= Math.round(element.duration/rot * 100) / 100;
 
@@ -46,16 +48,34 @@ function createTableSimple(output){
                 rendement: rend
             }
         );
-        
     });
-    table.push(tableAvg(table));
+    table = table.sort( (a, b)=> (a.tache > b.tache)? 1:-1); //p1 -> p2 -> p3
 
+    table.push(tableAvg(table));
+    
     return table;
 }
 
+function CreateTache(taches){
+    let output = []
+    taches.forEach(element => {
+        output.push(
+            {
+                name: element.name,
+                quantum : [],
+                remain : element.duration,
+                start : element.start,
+                duration: element.duration
+            }
+            
+        );
+    });
+    return output;
+}
 ///////// FIFO
-function fifo(taches){      
-    let array = taches.sort((a, b) =>( a.start > b.start) ? 1 : -1);
+function fifo(taches,numberPross){      
+    console.log("fifo function");
+    let array = taches.sort((a, b) =>( a.start > b.start) ? 1 : ((a.name > b.name)? 1:-1 ) );
     let output =[];
     let table= []   //rot, attent, rendement
 
@@ -68,11 +88,15 @@ function fifo(taches){
         const element = array[0];
         array.shift();  
 
+        
+        
+        console.log("befor",output);
         output = output.concat(CreateTache([element]));
-
+        console.log("after",output);
         let h = Math.max(currPosition[currPross],element.start);
         currPosition[currPross]=h+element.duration;
 
+        
         output.map(elm=>{
             if(elm.name==element.name){
                 elm.quantum.push(
@@ -84,10 +108,13 @@ function fifo(taches){
                 );
             }
         });
+        
 
     }
-    table = createTable(output);
-    console.log(table);
+    table = createTable(output);    
+    output = output.sort( (a, b)=> (a.tache > b.tache)? 1:-1); //p1 -> p2 -> p3
+
+    return [output,table]
 }
 
 //////////////////////////////////////////
@@ -102,8 +129,10 @@ function removeObject(array,obj){
 
 
 ////////////// SJF
-function SJF(taches){
-    let Open = taches.sort((a, b) =>( a.start > b.start) ? 1 : -1);
+function SJF(taches,numberPross){
+    
+    console.log("SJF function");
+    let array = taches.sort((a, b) =>( a.start > b.start) ? 1 : ((a.name > b.name)? 1:-1 ) );
 
     let Close = []
     let output =[];
@@ -122,68 +151,38 @@ function SJF(taches){
 
         Open = removeObject(Open,element);
         Close.push(element);
-        
+        output = output.concat(CreateTache([element]));
+
         let h = Math.max(currPosition[currPross],element.start);
         currPosition[currPross]=h+element.duration;
         
-        output.push(
-            {
-                name: element.name,
-                initStart : element.start,
-                duration : element.duration,
-                start: h,
-                end: currPosition[currPross],
-                pross: currPross
+        output.map(elm=>{
+            if(elm.name==element.name){
+                elm.quantum.push(
+                    {
+                        start : h,
+                        end : currPosition[currPross],
+                        pross : currPross
+                    }
+                );
+            }
         });
     }    
 
-    table = createTableSimple(output);
-    console.log(table)
+    table = createTable(output);
+
+    return [output,table]
 }
 /////////////////////////////////////////
 ///////////////// RR FUNCTION
-function CreateTache(taches){
-    output = []
-    taches.forEach(element => {
-        output.push(
-            {
-                name: element.name,
-                quantum : [],
-                remain : element.duration,
-                start : element.start,
-                duration: element.duration
-            }
-            
-        );
-    });
-    return output;
-}
 
-function createTable(output){
-    table = [];
-    output.forEach(element => {
-        let max = Math.max(...element.quantum.map((e)=>(e.end)));
-        let rot = max-element.start;
-        let att = rot - element.duration;
-        let rend= Math.round(element.duration/rot * 100) / 100;
 
-        table.push(
-            {
-                tache    : element.name,
-                rot      : rot, 
-                attent   : att,
-                rendement: rend
-            }
-        );
-    });
-    table.push(tableAvg(table));
-    
-    return table;
-}
 ///////////////// RR
 
-function rr(taches, q){
-    let array = taches.sort((a, b) =>( a.start > b.start) ? 1 : -1);
+function rr(taches, q, numberPross){
+    
+    console.log("rr function");
+    let array = taches.sort((a, b) =>( a.start > b.start) ? 1 : ((a.name > b.name)? 1:-1 ) );
     
     let output =[];
     let table= []   //rot, attent, rendement
@@ -202,7 +201,7 @@ function rr(taches, q){
             let selected = array.filter((a)=>(a.start <= currPosition[currPross] ));
 
             if (selected.length==0 && Open.length==0){
-                console.log("ff",Open);
+                
                 selected = [array[0]];
             }
 
@@ -247,40 +246,194 @@ function rr(taches, q){
         }
     }
     table = createTable(output);
-    console.log(table);
+    
+    return [output,table]
 }
 /////////////////////////////////////////
 
-//////////////// GRANTT CHART
-/*
-google.charts.load('current', { 'packages': ['gantt'] });
-google.charts.setOnLoadCallback(drawChart);
 
 
-function drawChart() {
+///////////////////////// GUI input
 
-    var data = new google.visualization.DataTable();
-    data.addColumn('string', 'Task ID');
-    data.addColumn('string', 'Task Name');
-    data.addColumn('date', 'Start');
-    data.addColumn('date', 'end');
-
-
-
-
-    data.addRows([
-        ['Research', 'Find sources',
-            1, 2],
-        ['Write', 'Write paper',
-            3,4]
-    ]);
-
-    var options = {
-        height: 50
-    };
-
-    var chart = new google.visualization.Gantt(document.getElementById('chart_div'));
-
-    chart.draw(data, options);
+function selectChanged(){
+    let selectValue = document.getElementById("select-algorithme").value;
+    let input = document.getElementById("quantumDiv");
+    
+    if (selectValue=="rr"){
+        input.style.display='inline';
+    }
+    else
+        input.style.display="none";
 }
-*/
+
+function showTache(btn){
+    btn.disabled = true;
+    let nbTache = document.getElementById("tacheInput").value;
+    
+    if(nbTache==""){
+        alert("Nombre de Tache invalide");
+    }else{
+
+        //show table and button
+        let divTable = document.getElementById("divTable");
+        divTable.style.display="inline";
+
+        //create table
+        let tacheTable = document.getElementById("tacheTable");
+        let bodyTable = tacheTable.getElementsByTagName('tbody')[0]
+
+        for(let i=1;i<=nbTache;i++){
+            let row = bodyTable.insertRow();
+
+            let field1 = document.createElement("input");
+            field1.setAttribute("class","form-control");
+            field1.setAttribute("disabled","true");    
+            field1.setAttribute("value","t"+i);
+            field1.setAttribute('id','fieldName'+i);    
+
+            let cell1 = row.insertCell();
+            cell1.appendChild(field1);
+
+            let field2 = document.createElement("input");
+            field2.setAttribute('id','fieldStart'+i);
+            field2.setAttribute("class","form-control");
+            let cell2 = row.insertCell();
+            cell2.appendChild(field2);
+
+            let field3 = document.createElement("input");
+            field3.setAttribute("class","form-control");
+            field3.setAttribute('id','fieldDuration'+i);
+            let cell3 = row.insertCell();
+            cell3.appendChild(field3);
+
+        }
+            
+    }
+}
+
+function addTache(btn){
+    //btn.disabled = true;
+    var taches=[];
+
+    var selectValue = document.getElementById("select-algorithme").value;
+    var nbTache = document.getElementById("tacheInput").value;
+    var nbQuantum = parseInt(document.getElementById("quantumInput").value);
+    var nbPross = parseInt(document.getElementById("prossInput").value);
+
+    if (nbQuantum=="" && selectValue=="rr"){   
+        alert("Nombre de quantum invalide");
+    }else{
+        for(let i=1; i<=nbTache; i++){
+            let nameInput = document.getElementById("fieldName"+i).value;
+            let startInput = parseInt(document.getElementById("fieldStart"+i).value);
+            let durationInput= parseInt(document.getElementById("fieldDuration"+i).value);
+            
+            taches.push(
+                {
+                    name: nameInput, 
+                    start: startInput, 
+                    duration: durationInput 
+                }
+            );
+        }
+        
+        let array, myOutput, myTable;
+        if (selectValue=="fifo"){
+            array = fifo(taches, nbPross);
+            
+        }else if (selectValue=="sjf"){
+            array = SJF(taches, nbPross);
+
+        }else if (selectValue=="rr"){
+            array = rr(taches, nbQuantum, nbPross);
+
+        }else if (selectValue=="srt"){
+
+        }else{
+            console.log("Calcule: selectValue error");
+        }
+        myOutput = array[0];
+        myTable = array[1];
+        showTableResult(myTable);
+        console.log(myOutput);
+        render(myOutput)
+    }
+    
+
+}
+
+
+
+
+/////////////////   GUI output
+
+
+function showTableResult(data){
+
+    let table = document.getElementById("table");
+    table.style.display = "inline";
+    let tbody = table.getElementsByTagName('tbody')[0]
+
+    while(tbody.hasChildNodes())
+    {
+        tbody.removeChild(tbody.firstChild);
+    }
+
+    data.forEach( element => {
+        let row = tbody.insertRow();
+    
+        let cell1 = row.insertCell();
+        cell1.innerHTML = element.tache;
+    
+        let cell2 = row.insertCell();
+        cell2.innerHTML = element.rot;
+    
+        let cell3 = row.insertCell();
+        cell3.innerHTML = element.attent;
+    
+        let cell4 = row.insertCell();
+        cell4.innerHTML = element.rendement;
+    
+    });
+    
+}
+
+
+function render(data) {
+    //header
+    let colors = new Map()
+    let maxIndex = Math.max(...data.reduce((output, e) => output = [...output, ...e.quantum.map(quantam => +quantam.end)], []))
+    let parts = Math.ceil(maxIndex / 5)
+    document.querySelector('.gantt').innerHTML = `<div class=header><div class="peace">0</div>`
+    for (let i = 1; i <= parts; i++) document.querySelector('.gantt .header').innerHTML += `<div class="peace" style="width:${5 * 30}px;">${i * 5}</div>`
+
+    data.forEach((elm) => {
+        //name
+        const div = document.createElement('div')
+        div.setAttribute('class', `ligne`)
+        const span = document.createElement('div')
+        span.setAttribute('class', "ElementName")
+        span.setAttribute('class', "peace")
+        span.innerHTML = elm.name
+        div.appendChild(span)
+        document.querySelector('.gantt').appendChild(div)
+        //lmachakil
+        elm.quantum.forEach(e => {
+            let color = '#fff'
+            for (let i = 0; i < 5 * parts; i++) {
+                if (i >= e.start && i < e.end) {
+                    if (!colors.has(e.pross)) {
+                        color = `rgb(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})`
+                        colors.set(e.pross, color)
+                    } else color = colors.get(e.pross)
+                }
+                const span = document.createElement('div')
+                span.setAttribute('class', "Element")
+                span.setAttribute('class', "peace")
+                span.style.backgroundColor = color
+                div.appendChild(span)
+                color = '#fff'
+            }
+        })
+    })
+}
