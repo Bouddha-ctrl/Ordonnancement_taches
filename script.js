@@ -56,7 +56,7 @@ function CreateTache(taches){
         output.push(
             {
                 name: element.name,
-                quantum : [],
+                quantum : new Array(),
                 remain : element.duration,
                 start : element.start,
                 duration: element.duration
@@ -250,42 +250,69 @@ function rr(taches, q, numberPross){
 }
 /////////////////////////////////////////
 
+function f(element){
+    let q = element.quantum;
+    console.log("element :",element.name," .quantum : ",...q,q);
+    q.forEach(element => {
+        console.log(element.pross);
+    });
+}
 //////////////////// SRT
 
 
 function SRT(taches, numberPross){
-
-    
     console.log("SRT function");
-    
+    let Open = [];
     let output =[];
     let table= []   //rot, attent, rendement
 
-    let Open = CreateTache(taches); 
-    Open = Open.sort((a,b)=>(a.start >= b.start) ? 1 : -1);
+    let array = CreateTache(taches); 
+    array = array.sort((a,b)=>(a.start >= b.start) ? 1 : -1);
 
     let currPosition = new Array(numberPross).fill(0);  //currPosition of every pross
     let currPross = 0;
 
+    let globalCursor = 0;
 
-    while(Open.length!=0 ){
-        console.log(Open);
+    while(Open.length!=0 || array.length!=0){
+        //console.log(Open);
         currPross = currPosition.indexOf(Math.min(...currPosition));
+        globalCursor = Math.max(...currPosition);
         let mid=  currPosition[currPross];
-        let selected = Open.filter((a)=>(a.start+a.duration-a.remain <= currPosition[currPross] ));
 
-        console.log("pross :",currPross,", cursor :",currPosition[currPross]," ",selected);
+        let selected = array.filter((a)=>(a.start+a.duration-a.remain <= globalCursor ));
+        array = array.filter( a => !selected.includes(a));
 
-        if (selected.length>1){
-            selected = selected.sort((a,b)=>(a.remain >= b.remain)? 1:-1);
+
+        //console.log("pross :",currPross,", cursor :",currPosition[currPross]," ",selected);
+
+        Open = Open.concat(selected);
+        if (Open.length>=1){
+            Open = Open.sort((a,b)=>(a.remain >= b.remain)? 1:-1);
         }
         else
-            selected =  [Open[0]];
+        Open =  [array[0]];
 
-        const element = selected[0];
+        let element = Open[0];
+
+        if (selected.length != 0){
+            if (element.quantum.length != 0){
+                let maxEnd = Math.max(...element.quantum.map(quantam => +quantam.end));
+                let q = element.quantum.filter( a => a.end == maxEnd);
+                
+                if (maxEnd == globalCursor){
+                    element = Open[1];
+                    currPross = q[0].pross;   
+                    //console.log("change in :",globalCursor, "to :",currPross);
+                }  
+            }
+                
+            
+        }
+
 
         let nextpos = 0;
-        let different = Open.filter(a=>!selected.includes(a));
+        let different = array.filter(a=>!Open.includes(a));
     
 
         if (different.length>=1){
@@ -413,7 +440,7 @@ function addTache(){
                 }
             );
         }
-        
+        taches = T;
         let array, myOutput, myTable;
         if (selectValue=="fifo"){
             array = fifo(taches, nbPross);
