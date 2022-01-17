@@ -440,7 +440,7 @@ function addTache(){
                 }
             );
         }
-        taches = T;
+        //taches = T;
         let array, myOutput, myTable;
         if (selectValue=="fifo"){
             array = fifo(taches, nbPross);
